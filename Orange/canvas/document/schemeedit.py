@@ -407,6 +407,13 @@ class SchemeEditWidget(QWidget):
         layout.addWidget(view)
         self.setLayout(layout)
 
+    def __showHideBackground(self):
+        nodeCount = len(self.__scheme.nodes)
+        if nodeCount > 0:
+            self.__view.hideBackground()
+        else:
+            self.__view.showBackground()
+
     def __setupScene(self, scene):
         """
         Set up a :class:`CanvasScene` instance for use by the editor.
@@ -644,6 +651,8 @@ class SchemeEditWidget(QWidget):
             self.setPath("")
 
             if self.__scheme:
+                self.__scheme.node_added.connect(self.__showHideBackground)
+                self.__scheme.node_removed.connect(self.__showHideBackground)
                 self.__scheme.title_changed.connect(self.titleChanged)
                 self.titleChanged.emit(scheme.title)
                 self.__cleanProperties = node_properties(scheme)

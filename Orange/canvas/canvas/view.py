@@ -19,7 +19,9 @@ class CanvasView(QGraphicsView):
         QGraphicsView.__init__(self, *args)
         self.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
-        self.__backgroundIcon = QIcon()
+        self.__backgroundPath = "maxresdefault.jpg"
+        self.__background = QIcon(self.__backgroundPath)
+        self.__backgroundIcon = self.__background  # enables background
 
         self.__autoScroll = False
         self.__autoScrollMargin = 16
@@ -166,9 +168,19 @@ class CanvasView(QGraphicsView):
             vrect = self.mapToScene(vrect).boundingRect()
 
             pm = self.__backgroundIcon.pixmap(
-                vrect.size().toSize().boundedTo(QSize(200, 200))
+                vrect.size().toSize().boundedTo(QSize(500, 500))
             )
             pmrect = QRect(QPoint(0, 0), pm.size())
             pmrect.moveCenter(vrect.center().toPoint())
             if rect.toRect().intersects(pmrect):
                 painter.drawPixmap(pmrect, pm)
+
+    def hideBackground(self):
+        if self.__backgroundIcon == self.__background:
+            self.__backgroundIcon = QIcon()
+            self.scene().update()
+
+    def showBackground(self):
+        if self.__backgroundIcon != self.__background:
+            self.__backgroundIcon = self.__background
+            self.scene().update()
