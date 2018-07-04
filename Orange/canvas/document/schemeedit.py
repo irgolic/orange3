@@ -883,17 +883,13 @@ class SchemeEditWidget(QWidget):
         for item in selected:
             if isinstance(item, items.NodeItem):
                 node = self.scene().node_for_item(item)
-                self.__undoStack.push(
-                    commands.RemoveNodeCommand(self.__scheme, node)
-                )
+                self.removeNode(node)
             elif isinstance(item, items.annotationitem.Annotation):
                 if item.hasFocus() or item.isAncestorOf(scene.focusItem()):
                     # Clear input focus from the item to be removed.
                     scene.focusItem().clearFocus()
                 annot = self.scene().annotation_for_item(item)
-                self.__undoStack.push(
-                    commands.RemoveAnnotationCommand(self.__scheme, annot)
-                )
+                self.removeAnnotation(annot)
         self.__undoStack.endMacro()
 
     def showSettings(self):
