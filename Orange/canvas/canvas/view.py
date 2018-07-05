@@ -19,7 +19,7 @@ class CanvasView(QGraphicsView):
         QGraphicsView.__init__(self, *args)
         self.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
-        self.__backgroundPath = "maxresdefault.jpg"
+        self.__backgroundPath = "canvas/icons/empty_canvas_background.png"
         self.__background = QIcon(self.__backgroundPath)
         self.__backgroundIcon = self.__background  # enables background
 
@@ -168,7 +168,7 @@ class CanvasView(QGraphicsView):
             vrect = self.mapToScene(vrect).boundingRect()
 
             pm = self.__backgroundIcon.pixmap(
-                vrect.size().toSize().boundedTo(QSize(500, 500))
+                vrect.size().toSize().boundedTo(QSize(1000, 1000))
             )
             pmrect = QRect(QPoint(0, 0), pm.size())
             pmrect.moveCenter(vrect.center().toPoint())
