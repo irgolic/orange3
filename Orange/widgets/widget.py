@@ -380,9 +380,24 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
             sb = QStatusBar()
             sb.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Maximum)
             sb.setSizeGripEnabled(self.resizing_enabled)
+            sb.setStyleSheet(
+                """
+                QStatusBar {
+                    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #ffffff,
+                                stop: 1 #ffffff);
+                    border-top: 1px solid #888888;
+                }
+
+                QStatusBar::item {
+                    border: none;
+                }
+                """
+            )
             c.layout().addWidget(sb)
 
-            icon_size = QSize(32, 32)
+            icon_size = QSize(16, 16)
+            sb.setContentsMargins(6, 0, 0, 0)
 
             help = self.__help_action
             icon = QIcon(gui.resource_filename("icons/help.svg"))
@@ -392,6 +407,7 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                 toolTip="Show widget help", visible=help.isVisible(),
             )
             help_button.setIconSize(icon_size)
+            help_button.setFixedHeight(icon_size.height())
             @help.changed.connect
             def _():
                 help_button.setVisible(help.isVisible())
@@ -407,6 +423,7 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                     toolTip="Save Image",
                 )
                 b.setIconSize(icon_size)
+                b.setFixedHeight(icon_size.height())
                 b.clicked.connect(self.save_graph)
                 sb.addWidget(b)
             if hasattr(self, "send_report"):
@@ -416,9 +433,11 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                     icon=icon,
                     toolTip="Report"
                 )
-                b.clicked.connect(self.show_report)
                 b.setIconSize(icon_size)
+                b.setFixedHeight(icon_size.height())
+                b.clicked.connect(self.show_report)
                 sb.addWidget(b)
+
             self.message_bar = MessagesWidget(self)
             self.message_bar.setSizePolicy(QSizePolicy.Preferred,
                                            QSizePolicy.Preferred)
