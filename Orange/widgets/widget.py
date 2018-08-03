@@ -13,8 +13,8 @@ from AnyQt.QtWidgets import (
 )
 from AnyQt.QtCore import (
     Qt, QRect, QMargins, QByteArray, QDataStream, QBuffer, QSettings,
-    QUrl, pyqtSignal as Signal
-)
+    QUrl, pyqtSignal as Signal,
+    QSize)
 from AnyQt.QtGui import QIcon, QKeySequence, QDesktopServices
 
 from Orange.data import FileFormat
@@ -382,6 +382,8 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
             sb.setSizeGripEnabled(self.resizing_enabled)
             c.layout().addWidget(sb)
 
+            icon_size = QSize(32, 32)
+
             help = self.__help_action
             icon = QIcon(gui.resource_filename("icons/help.svg"))
             icon.addFile(gui.resource_filename("icons/help-hover.svg"), mode=QIcon.Active)
@@ -389,6 +391,7 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                 icon=icon,
                 toolTip="Show widget help", visible=help.isVisible(),
             )
+            help_button.setIconSize(icon_size)
             @help.changed.connect
             def _():
                 help_button.setVisible(help.isVisible())
@@ -403,6 +406,7 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                     icon=icon,
                     toolTip="Save Image",
                 )
+                b.setIconSize(icon_size)
                 b.clicked.connect(self.save_graph)
                 sb.addWidget(b)
             if hasattr(self, "send_report"):
@@ -413,6 +417,7 @@ class OWWidget(QDialog, OWComponent, Report, ProgressBarMixin,
                     toolTip="Report"
                 )
                 b.clicked.connect(self.show_report)
+                b.setIconSize(icon_size)
                 sb.addWidget(b)
             self.message_bar = MessagesWidget(self)
             self.message_bar.setSizePolicy(QSizePolicy.Preferred,
