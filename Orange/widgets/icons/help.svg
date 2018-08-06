@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 48 48" style="enable-background:new 0 0 48 48;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#CECECE;}
-	.st1{fill:#FFFFFF;}
-	.st2{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}
-	.st3{fill:none;stroke:#231F20;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;}
-</style>
-<g>
-	<path class="st2" d="M16.4,6.9C18.3,5.6,20.7,5,23.5,5c3.7,0,6.7,0.9,9.2,2.7c2.4,1.8,3.6,4.5,3.6,8c0,2.2-0.5,4-1.6,5.5
-		c-0.6,0.9-1.8,2-3.5,3.4l-1.7,1.4c-0.9,0.7-1.6,1.6-1.9,2.6c-0.2,0.6-0.3,1.6-0.3,2.9h-6.6c0.1-2.8,0.4-4.8,0.8-5.8
-		c0.4-1.1,1.5-2.3,3.3-3.7l1.8-1.4c0.6-0.5,1.1-0.9,1.4-1.5c0.6-0.9,1-1.9,1-3c0-1.3-0.4-2.4-1.1-3.5c-0.7-1-2-1.6-4-1.6
-		c-1.9,0-3.2,0.6-4,1.9s-1.2,2.6-1.2,4h-7C11.8,12.2,13.4,8.9,16.4,6.9"/>
-	<rect x="20.6" y="36.5" class="st2" width="6.6" height="6.6"/>
+<!-- Generator: Adobe Illustrator 17.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="500px"
+	 height="500px" viewBox="0 0 500 500" enable-background="new 0 0 500 500" xml:space="preserve">
+<g id="Layer_1">
+	<g>
+		<path fill="none" stroke="#231F20" stroke-width="23.7636" stroke-miterlimit="10" d="M154.998,36.141
+			c23.751-16.25,53.751-23.751,88.752-23.751c46.251,0,83.752,11.25,115.003,33.751c30.001,22.501,45.001,56.251,45.001,100.002
+			c0,27.501-6.25,50.001-20,68.752c-7.5,11.25-22.501,25.001-43.751,42.501l-21.251,17.5c-11.25,8.75-20,20-23.751,32.501
+			c-2.5,7.5-3.75,20-3.75,36.251h-82.502c1.25-35.001,5-60.001,10-72.502c5-13.75,18.75-28.751,41.251-46.251l22.501-17.5
+			c7.5-6.25,13.75-11.25,17.5-18.75c7.5-11.25,12.5-23.751,12.5-37.501c0-16.25-5-30.001-13.75-43.751
+			c-8.75-12.5-25.001-20-50.001-20c-23.751,0-40.001,7.5-50.001,23.751s-15,32.501-15,50.001H96.246
+			C97.496,102.392,117.497,61.141,154.998,36.141"/>
+		
+			<rect x="207.499" y="406.15" fill="none" stroke="#231F20" stroke-width="23.7636" stroke-miterlimit="10" width="82.502" height="82.502"/>
+	</g>
+</g>
+<g id="Layer_2">
 </g>
 </svg>
