@@ -271,7 +271,7 @@ class CanvasMainWindow(QMainWindow):
         )
 
         self.dock_help = canvas_tool_dock.help
-        self.dock_help.setMaximumHeight(150)
+        self.dock_help.setMaximumHeight(300)
         self.dock_help.document().setDefaultStyleSheet("h3, a {color: orange;}")
 
         self.dock_help_action = canvas_tool_dock.toogleQuickHelpAction()

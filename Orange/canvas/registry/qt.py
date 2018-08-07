@@ -342,6 +342,8 @@ def whats_this_helper(desc, include_more_link=False):
     if help_url and include_more_link:
         template.append("<a href='{0}'>more...</a>".format(escape(help_url)))
 
+    template.append("<center><img src='Orange/widgets/examples/file.png' width='250'/></center>")
+
     return "\n".join(template)
 
 
