@@ -434,6 +434,32 @@ class UserSettingsDialog(QMainWindow):
             # the space that should be used for layout of the contents
             self.adjustSize()
 
+        # Notifications Tab
+        tab = QWidget()
+        self.addTab(tab, self.tr("Notifications"),
+                    toolTip="Settings related to notifications")
+
+        form = QFormLayout()
+
+        notifs = QWidget(self, objectName="notifications-group")
+        notifs.setLayout(QVBoxLayout())
+        notifs.layout().setContentsMargins(0, 0, 0, 0)
+
+        cb1 = QCheckBox(self.tr("Events"), self,
+                        toolTip="Show notifications about events")
+
+        cb2 = QCheckBox(self.tr("Blog posts"), self,
+                        toolTip="Show notifications about blog posts")
+
+        self.bind(cb1, "checked", "notifications/events")
+        self.bind(cb2, "checked", "notifications/blog")
+
+        notifs.layout().addWidget(cb1)
+        notifs.layout().addWidget(cb2)
+
+        form.addRow(self.tr("Show notifications about"), notifs)
+        tab.setLayout(form)
+
     def addTab(self, widget, text, toolTip=None, icon=None):
         if self.__macUnified:
             action = QAction(text, self)

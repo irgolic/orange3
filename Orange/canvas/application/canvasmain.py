@@ -443,7 +443,11 @@ class CanvasMainWindow(QMainWindow):
             # TODO check if notification has been seen and suppressed
 
 
-            # TODO check if type is filtered by user
+            # check if type is filtered by user
+            if notif.type == 'update' and not settings['notifications/updates'] \
+                    or notif.type == 'event' and not settings['notifications/events'] \
+                    or notif.type == 'blog' and not settings['notifications/blog']:
+                continue
 
 
             # check time validity
