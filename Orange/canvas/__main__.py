@@ -19,7 +19,7 @@ from urllib.request import urlopen, Request, getproxies
 
 import pkg_resources
 
-from AnyQt.QtGui import QFont, QColor, QPalette, QDesktopServices
+from AnyQt.QtGui import QFont, QColor, QPalette, QDesktopServices, QIcon
 from AnyQt.QtWidgets import QMessageBox
 from AnyQt.QtCore import (
     Qt, QDir, QUrl, QSettings, QThread, pyqtSignal, QT_VERSION
@@ -180,7 +180,7 @@ def make_sql_logger(level=logging.INFO):
     sql_log.addHandler(handler)
 
 
-def check_for_updates():
+def check_for_updates(scheme_widget):
     settings = QSettings()
     check_updates = settings.value('startup/check-updates', True, type=bool)
     last_check_time = settings.value('startup/last-update-check-time', 0, type=int)
@@ -221,22 +221,32 @@ def check_for_updates():
 
         def compare_versions(latest):
             version = pkg_resources.parse_version
-            if version(latest) <= version(current):
+            skipped = settings.value('startup/latest-skipped-version', "", type=str)
+            if version(latest) <= version(current) or \
+                    latest == skipped:
                 return
-            question = QMessageBox(
-                QMessageBox.Information,
-                'Orange Update Available',
-                'A newer version of Orange is available.<br><br>'
-                '<b>Current version:</b> {}<br>'
-                '<b>Latest version:</b> {}'.format(current, latest),
-                textFormat=Qt.RichText)
-            ok = question.addButton('Download Now', question.AcceptRole)
-            question.setDefaultButton(ok)
-            question.addButton('Remind Later', question.RejectRole)
-            question.finished.connect(
-                lambda:
-                question.clickedButton() == ok and
-                QDesktopServices.openUrl(QUrl("https://orange.biolab.si/download/")))
+
+            from Orange.canvas.utils.overlay import NotificationWidget
+
+            questionButtons = NotificationWidget.Ok | NotificationWidget.Close
+            question = NotificationWidget(parent=scheme_widget,
+                                          icon=QIcon('Orange/widgets/icons/Dlg_down3.png'),
+                                          title='Orange Update Available',
+                                          text='Current version: <b>{}</b><br>'
+                                               'Latest version: <b>{}</b>'.format(current, latest),
+                                          standardButtons=questionButtons,
+                                          acceptLabel="Download",
+                                          rejectLabel="Skip this Version")
+            question.setTextFormat(Qt.RichText)
+
+            def handle_click(b):
+                if question.buttonRole(b) != question.DismissRole:
+                    settings.setValue('startup/latest-skipped-version', latest)
+                if question.buttonRole(b) == question.AcceptRole:
+                    QDesktopServices.openUrl(QUrl("https://orange.biolab.si/download/"))
+
+            question.clicked.connect(handle_click)
+            question.setWidget(scheme_widget)
             question.show()
 
         thread = GetLatestVersion()
@@ -532,7 +542,7 @@ def main(argv=None):
         canvas_window.load_scheme(open_requests[-1].toLocalFile())
 
     # local references prevent destruction
-    update_check = check_for_updates()
+    update_check = check_for_updates(canvas_window.scheme_widget)
     send_stat = send_usage_statistics()
 
     # Tee stdout and stderr into Output dock
