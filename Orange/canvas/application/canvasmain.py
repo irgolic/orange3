@@ -416,33 +416,26 @@ class CanvasMainWindow(QMainWindow):
 
         # data collection permission
         if not settings["error-reporting/permission-requested"]:
-            permDialogButtons = NotificationWidget.AcceptRole | NotificationWidget.RejectRole
+            permDialogButtons = NotificationWidget.Ok | NotificationWidget.Close
             permDialog = NotificationWidget(parent=self.scheme_widget,
-                                            text="Do you wish to share anonymous usage "
-                                                 "statistics to help improve Orange?",
-                                            wordWrap=True,
+                                            icon=QIcon("distribute/icon-48.png"),
+                                            title="Anonymous Usage Statistics",
+                                            text="Do you wish to opt-in to sharing "
+                                                 "statistics about how you use Orange?\n"
+                                                 "All data is anonymized and used "
+                                                 "exclusively for understanding how users "
+                                                 "interact with Orange.",
                                             standardButtons=permDialogButtons)
             btnOK = permDialog.button(NotificationWidget.AcceptRole)
             btnOK.setText("Allow")
 
-            def respondToRequest():
-                settings["error-reporting/permission-requested"] = True
+            def handle_response(button):
+                if permDialog.buttonRole(button) != permDialog.DismissRole:
+                    settings["error-reporting/permission-requested"] = True
+                if permDialog.buttonRole(button) == permDialog.AcceptRole:
+                    settings["error-reporting/send-statistics"] = True
 
-            def shareData():
-                settings["error-reporting/send-statistics"] = True
-
-            permDialog.clicked.connect(respondToRequest)
-            permDialog.accepted.connect(shareData)
-
-            permDialog.setStyleSheet("""
-                                MessageOverlayWidget {
-                                    background: qlineargradient(
-                                        x1: 0, y1: 0, x2: 0, y2: 1,
-                                        stop:0 #666, stop:0.3 #6D6D6D, stop:1 #666)
-                                }
-                                MessageOverlayWidget QLabel#text-label {
-                                    color: white;
-                                }""")
+            permDialog.clicked.connect(handle_response)
 
             permDialog.setWidget(self.scheme_widget)
             permDialog.show()
