@@ -389,26 +389,25 @@ class CanvasMainWindow(QMainWindow):
     def setup_notifications(self):
         settings = config.settings()
 
-        # If run for the first time, prompt short survey
-        show_survey = settings["startup/show-survey"]
+        # If run for the fifth time, prompt short survey
+        show_survey = settings["startup/show-short-survey"] and \
+                      settings["startup/launch-count"] >= 5
         if show_survey:
             surveyDialogButtons = NotificationWidget.Ok | NotificationWidget.Close
             surveyDialog = NotificationWidget(parent=self.scheme_widget,
-                                              icon=QIcon("Orange/Dlg_down3.png"),
+                                              icon=QIcon("Orange/widgets/icons/information.png"),
                                               title="Survey",
-                                              text="We want to get to know our users better.\n"
-                                                   "Would you care to fill out a "
-                                                   "1-minute survey?",
-                                              wordWrap=True,
+                                              text="We want to understand our users better.\n"
+                                                   "Would you like to take a short survey?",
                                               standardButtons=surveyDialogButtons)
 
             def handle_response(button):
                 if surveyDialog.buttonRole(button) == NotificationWidget.AcceptRole:
                     success = QDesktopServices.openUrl(
                         QUrl("https://orange.biolab.si/survey/short.html"))
-                    settings["startup/show-survey"] = not success
+                    settings["startup/show-short-survey"] = not success
                 elif surveyDialog.buttonRole(button) == NotificationWidget.RejectRole:
-                    settings["startup/show-survey"] = False
+                    settings["startup/show-short-survey"] = False
 
             surveyDialog.clicked.connect(handle_response)
 
