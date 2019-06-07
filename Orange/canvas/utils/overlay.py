@@ -1,3 +1,5 @@
+# pylint: disable=C0103
+
 import enum
 import functools
 import operator
@@ -5,8 +7,8 @@ import sys
 from collections import namedtuple
 
 from AnyQt import QtGui
-from AnyQt.QtCore import Signal, Qt, QSize, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QDesktopServices
+from AnyQt.QtCore import Signal, Qt, QSize
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QAbstractButton, QHBoxLayout, QPushButton, QStyle, QWidget, \
     QVBoxLayout, QLabel, QSizePolicy
 
@@ -264,8 +266,7 @@ class NotificationMessageWidget(QWidget):
         for slot in self._buttons:
             if slot.button is button:
                 return slot.role
-        else:
-            return MessageWidget.InvalidRole
+        return MessageWidget.InvalidRole
 
     def button(self, standardButton):
         """
@@ -276,8 +277,7 @@ class NotificationMessageWidget(QWidget):
         for slot in self._buttons:
             if slot.stdbutton == standardButton:
                 return slot.button
-        else:
-            return None
+        return None
 
     def _button_clicked(self):
         button = self.sender()
@@ -406,7 +406,7 @@ class NotificationWidget(OverlayWidget):
         return self._msgwidget.icon()
 
     @proxydoc(MessageWidget.textFormat)
-    def textFromat(self):
+    def textFormat(self):
         return self._msgwidget.textFormat()
 
     @proxydoc(MessageWidget.setTextFormat)

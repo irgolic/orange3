@@ -20,7 +20,6 @@ from urllib.request import urlopen, Request, getproxies
 import pkg_resources
 
 from AnyQt.QtGui import QFont, QColor, QPalette, QDesktopServices, QIcon
-from AnyQt.QtWidgets import QMessageBox
 from AnyQt.QtCore import (
     Qt, QDir, QUrl, QSettings, QThread, pyqtSignal, QT_VERSION
 )

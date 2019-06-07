@@ -401,7 +401,7 @@ class CanvasMainWindow(QMainWindow):
                                                    "Would you like to take a short survey?",
                                               standardButtons=surveyDialogButtons)
 
-            def handle_response(button):
+            def handle_survey_response(button):
                 if surveyDialog.buttonRole(button) == NotificationWidget.AcceptRole:
                     success = QDesktopServices.openUrl(
                         QUrl("https://orange.biolab.si/survey/short.html"))
@@ -409,7 +409,7 @@ class CanvasMainWindow(QMainWindow):
                 elif surveyDialog.buttonRole(button) == NotificationWidget.RejectRole:
                     settings["startup/show-short-survey"] = False
 
-            surveyDialog.clicked.connect(handle_response)
+            surveyDialog.clicked.connect(handle_survey_response)
 
             surveyDialog.setWidget(self.scheme_widget)
             surveyDialog.show()
@@ -429,13 +429,13 @@ class CanvasMainWindow(QMainWindow):
             btnOK = permDialog.button(NotificationWidget.AcceptRole)
             btnOK.setText("Allow")
 
-            def handle_response(button):
+            def handle_perm_response(button):
                 if permDialog.buttonRole(button) != permDialog.DismissRole:
                     settings["error-reporting/permission-requested"] = True
                 if permDialog.buttonRole(button) == permDialog.AcceptRole:
                     settings["error-reporting/send-statistics"] = True
 
-            permDialog.clicked.connect(handle_response)
+            permDialog.clicked.connect(handle_perm_response)
 
             permDialog.setWidget(self.scheme_widget)
             permDialog.show()

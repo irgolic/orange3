@@ -5,6 +5,7 @@ Overlay Message Widget
 A Widget to display a temporary dismissible message over another widget.
 
 """
+# pylint: disable=C0103
 
 import sys
 import enum
@@ -432,8 +433,7 @@ class MessageWidget(QWidget):
         for slot in self._buttons:
             if slot.button is button:
                 return slot.role
-        else:
-            return MessageWidget.InvalidRole
+        return MessageWidget.InvalidRole
 
     def button(self, standardButton):
         """
@@ -444,8 +444,7 @@ class MessageWidget(QWidget):
         for slot in self._buttons:
             if slot.stdbutton == standardButton:
                 return slot.button
-        else:
-            return None
+        return None
 
     def _button_clicked(self):
         button = self.sender()
@@ -533,7 +532,7 @@ class MessageOverlayWidget(OverlayWidget):
         return self.__msgwidget.icon()
 
     @proxydoc(MessageWidget.textFormat)
-    def textFromat(self):
+    def textFormat(self):
         return self.__msgwidget.textFormat()
 
     @proxydoc(MessageWidget.setTextFormat)
