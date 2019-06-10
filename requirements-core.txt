@@ -20,3 +20,5 @@ python-louvain>=0.13
 requests
 openTSNE>=0.3.0
 pyyaml
+requirements-parser
+packaging

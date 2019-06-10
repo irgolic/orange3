@@ -30,6 +30,8 @@ from AnyQt.QtCore import (
     QObject, QFileInfo
 )
 
+from Orange import version
+
 try:
     from AnyQt.QtWebEngineWidgets import QWebEngineView
 except ImportError:
@@ -65,6 +67,7 @@ from ..document.usagestatistics import UsageStatistics
 
 from ..help import HelpManager
 
+from .addons import list_installed_addons
 from .canvastooldock import CanvasToolDock, QuickCategoryToolbar, \
                             CategoryPopupMenu, popup_position_from_source
 from .aboutdialog import AboutDialog
@@ -387,7 +390,73 @@ class CanvasMainWindow(QMainWindow):
         self.setup_notifications()
 
     def setup_notifications(self):
+        import yaml
+        import requirements
+        from packaging.version import Version
+
         settings = config.settings()
+
+        # map of installed addon name -> version
+        installed = {}
+        for addon in list_installed_addons():
+            installed[addon.project_name] = addon.version
+        installed['Orange3'] = version.short_version
+
+        op_map = {
+            '==': lambda a, b: a == b,
+            '>=': lambda a, b: a >= b,
+            '<=': lambda a, b: a <= b,
+            '>': lambda a, b: a > b,
+            '<': lambda a, b: a < b
+        }
+
+        def requirementsSatisfied(required_state, local_state, versions=False):
+            """
+            Checks a list of requirements against a dictionary representing local state.
+            Setting the versions flag converts the values to versions before comparing them.
+            """
+            for req_string in required_state:
+                req = next(requirements.parse(req_string))
+                if req.name not in local_state.keys():
+                    # if required key not present locally (e.g. package not installed), fail
+                    return False
+                for spec in req.specs:
+                    # check if local state satisfies required state (specification)
+                    # spec = e.g. ('>', '3.20')
+                    op = op_map[spec[0]]
+
+                    if versions:
+                        local_value = Version(local_state[req.name])
+                        required_value = Version(spec[1])
+                    else:
+                        local_value = local_state[req.name]
+                        required_value = spec[1]
+
+                    if not op(local_value, required_value):
+                        return False
+            return True
+
+        # notification feed
+        feed = yaml.safe_load(open("scratch.yml"))
+        for notif in feed:
+            # TODO check if notification has been seen and suppressed
+
+            # TODO check if type is filtered by user
+
+            # TODO check time validity
+
+            # check requirements
+            reqs = notif.requirements
+
+            # Orange/addons version
+            if reqs['installed'] and \
+                    not requirementsSatisfied(reqs['installed'], installed, versions=True):
+                continue
+            # local config values
+            if reqs['local_config'] and not requirementsSatisfied(reqs['local_config'], settings):
+                continue
+
+            NotificationWidget.from_YAMLObject(notif, parent=self.scheme_widget).show()
 
         # If run for the fifth time, prompt short survey
         show_survey = settings["startup/show-short-survey"] and \
