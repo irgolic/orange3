@@ -6,6 +6,8 @@ import operator
 import sys
 from collections import namedtuple
 
+import yaml as yaml
+
 from AnyQt import QtGui
 from AnyQt.QtCore import Signal, Qt, QSize
 from PyQt5.QtGui import QIcon, QPixmap
@@ -388,6 +390,66 @@ class NotificationWidget(OverlayWidget):
         if q:
             notif = q[0]
             notif.display()
+
+    class Notification(yaml.YAMLObject):
+        """
+        Used for safe loading of yaml file.
+        """
+        yaml_loader = yaml.SafeLoader
+        yaml_tag = u'!Notification'
+
+        def __init__(self, id, start, end, requirements, icon, title, text, link,
+                     accept_button_label, reject_button_label):
+            self.id = id
+            self.start = start
+            self.end = end
+            self.requirements = requirements
+            self.icon = icon
+            self.title = title
+            self.text = text
+            self.link = link
+            self.accept_button_label = accept_button_label
+            self.reject_button_label = reject_button_label
+
+    @staticmethod
+    def from_YAMLObject(notif, parent=None):
+        """
+        Creates NotificatonWidget from Notification(YAMLObject).
+
+        :type: Notification
+        :rtype: NotificationWidget
+        """
+        buttons = 0
+        if notif.accept_button_label:
+            buttons |= NotificationWidget.Ok
+        if notif.reject_button_label:
+            buttons |= NotificationWidget.Close
+
+        widget = NotificationWidget(parent=parent,
+                                    title=notif.title,
+                                    text=notif.text,
+                                    icon=QIcon(notif.icon),
+                                    standardButtons=buttons,
+                                    acceptLabel=notif.accept_button_label,
+                                    rejectLabel=notif.reject_button_label)
+
+        def handle_response(button):
+            role = widget.buttonRole(button)
+            if role == NotificationWidget.DismissRole:
+                return
+            if role == NotificationWidget.AcceptRole:
+                url = QUrl(notif.link)
+                if url.scheme() == "orange":
+                    # TODO handle action
+                    pass
+                else:
+                    QDesktopServices.openUrl(url)
+            # TODO remember notif.id, do not display again
+
+        widget.clicked.connect(handle_response)
+
+        widget.setWidget(parent)
+        return widget
 
     @proxydoc(MessageWidget.setText)
     def setText(self, text):
