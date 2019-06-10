@@ -393,6 +393,7 @@ class CanvasMainWindow(QMainWindow):
         import yaml
         import requirements
         from packaging.version import Version
+        from datetime import date
 
         settings = config.settings()
 
@@ -441,9 +442,14 @@ class CanvasMainWindow(QMainWindow):
         for notif in feed:
             # TODO check if notification has been seen and suppressed
 
+
             # TODO check if type is filtered by user
 
-            # TODO check time validity
+
+            # check time validity
+            today = date.today()
+            if notif.start > today or notif.end < today:
+                continue
 
             # check requirements
             reqs = notif.requirements
