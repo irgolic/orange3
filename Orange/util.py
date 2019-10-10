@@ -9,18 +9,12 @@ from itertools import chain, count, repeat
 
 from collections import OrderedDict, namedtuple
 import warnings
-
-try:
-    from AnyQt.QtCore import pyqtWrapperType
-except ImportError:
-    from sip import wrappertype as pyqtWrapperType
+import pkg_resources
 
 # Exposed here for convenience. Prefer patching to try-finally blocks
 from unittest.mock import patch  # pylint: disable=unused-import
 
 # Backwards-compat
-import pkg_resources
-
 from Orange.data.util import scale  # pylint: disable=unused-import
 
 
