@@ -1,4 +1,4 @@
-Orange
+<kbd height=36><img src=https://raw.githubusercontent.com/irgolic/orange3/master/distribute/icon-48.png alt=img height=36/></kbd> Orange
 ======
 
 [![Discord Chat](https://img.shields.io/discord/633376992607076354?style=plastic)](https://discord.gg/FWrfeXV)
