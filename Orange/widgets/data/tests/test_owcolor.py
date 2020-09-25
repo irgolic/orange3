@@ -717,9 +717,9 @@ class TestOWColor(WidgetTest):
         output_sum.reset_mock()
         self.send_signal(self.widget.Inputs.data, None)
         input_sum.assert_called_once()
-        self.assertEqual(input_sum.call_args[0][0].brief, "")
+        self.assertEqual(input_sum.call_args[0][0].brief, "-")
         output_sum.assert_called_once()
-        self.assertEqual(output_sum.call_args[0][0].brief, "")
+        self.assertEqual(output_sum.call_args[0][0].brief, "-")
 
     def test_reset(self):
         self.send_signal(self.widget.Inputs.data, self.iris)

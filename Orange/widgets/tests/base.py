@@ -752,8 +752,8 @@ class ProjectionWidgetTestMixin:
 
     def test_in_out_summary(self, timeout=DEFAULT_TIMEOUT):
         info = self.widget.info
-        self.assertEqual(info._StateInfo__input_summary.brief, "")
-        self.assertEqual(info._StateInfo__output_summary.brief, "")
+        self.assertEqual(info._StateInfo__input_summary.brief, "-")
+        self.assertEqual(info._StateInfo__output_summary.brief, "-")
         self.assertIn(info._StateInfo__input_summary.details,
                       ["", "No data on input"])
         self.assertIn(info._StateInfo__output_summary.details,
@@ -776,8 +776,8 @@ class ProjectionWidgetTestMixin:
                          ["", "No data on output"])
 
         self.send_signal(self.widget.Inputs.data, None)
-        self.assertEqual(info._StateInfo__input_summary.brief, "")
-        self.assertEqual(info._StateInfo__output_summary.brief, "")
+        self.assertEqual(info._StateInfo__input_summary.brief, "-")
+        self.assertEqual(info._StateInfo__output_summary.brief, "-")
         self.assertIn(info._StateInfo__input_summary.details,
                       ["", "No data on input"])
         self.assertIn(info._StateInfo__output_summary.details,

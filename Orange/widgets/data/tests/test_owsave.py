@@ -75,7 +75,7 @@ class TestOWSave(OWSaveTestBase):
         insum.reset_mock()
         self.send_signal(datasig, None)
         insum.assert_called_once()
-        self.assertEqual(insum.call_args[0][0].brief, "")
+        self.assertEqual(insum.call_args[0][0].brief, "-")
 
     def test_initial_start_dir(self):
         widget = self.widget
