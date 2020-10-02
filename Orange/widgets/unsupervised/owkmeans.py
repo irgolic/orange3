@@ -135,7 +135,6 @@ class OWKMeans(widget.OWWidget):
                     ("Random initialization", "random"))
 
     resizing_enabled = False
-    buttons_area_orientation = Qt.Vertical
 
     k = Setting(3)
     k_from = Setting(2)
@@ -227,10 +226,6 @@ class OWKMeans(widget.OWWidget):
             sb, self, "max_iterations", controlWidth=60, valueType=int,
             validator=QIntValidator(), callback=self.invalidate)
 
-        self.apply_button = gui.auto_apply(self.buttonsArea, self, "auto_commit", box=None,
-                                           commit=self.commit)
-        gui.rubber(self.controlArea)
-
         box = gui.vBox(self.mainArea, box="Silhouette Scores")
         self.mainArea.setVisible(self.optimize_k)
         self.table_model = ClusterTableModel(self)
@@ -245,6 +240,9 @@ class OWKMeans(widget.OWWidget):
         table.horizontalHeader().hide()
         table.setShowGrid(False)
         box.layout().addWidget(table)
+
+        self.apply_button = gui.auto_apply(self.buttonsArea, self, "auto_commit",
+                                           commit=self.commit)
 
     def adjustSize(self):
         self.ensurePolished()
