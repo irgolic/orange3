@@ -711,7 +711,6 @@ class OWFeatureStatistics(widget.OWWidget):
         statistics = Output('Statistics', Table)
 
     want_main_area = True
-    buttons_area_orientation = Qt.Vertical
 
     settingsHandler = DomainContextHandler()
     settings_version = 2
@@ -750,7 +749,6 @@ class OWFeatureStatistics(widget.OWWidget):
         )
         self.cb_color_var.activated.connect(self.__color_var_changed)
 
-        gui.rubber(self.controlArea)
         gui.auto_send(self.buttonsArea, self, "auto_commit")
 
         self.info.set_input_summary(self.info.NoInput)
