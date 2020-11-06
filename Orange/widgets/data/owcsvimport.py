@@ -943,16 +943,8 @@ class OWCSVFileImport(widget.OWWidget):
                 options = Options(
                     encoding="utf-8", dialect=dialect, rowspec=rowspec)
 
-            dlg = CSVImportDialog(
-                self, windowTitle="Import Options", sizeGripEnabled=True)
-            dlg.setWindowModality(Qt.WindowModal)
-            dlg.setPath(path)
-            dlg.setOptions(options)
-            status = dlg.exec_()
-            dlg.deleteLater()
-            if status == QDialog.Accepted:
-                self.set_selected_file(path, dlg.options())
-                self.current_item().setVarPath(varpath)
+            self.set_selected_file(path, options)
+            self.current_item().setVarPath(varpath)
 
     def current_item(self):
         # type: () -> Optional[ImportItem]
