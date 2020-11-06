@@ -43,8 +43,10 @@ class VarTableModel(QAbstractTableModel):
     name2type = dict(zip(typenames, vartypes))
     type2name = dict(zip(vartypes, typenames))
 
-    def __init__(self, variables, *args):
-        super().__init__(*args)
+    def __init__(self, parent, variables=None):
+        super().__init__(parent)
+        if variables is not None:
+            variables = []
         self.variables = variables
         self.orig_variables = None
         self.set_orig_variables(variables)
@@ -89,7 +91,8 @@ class VarTableModel(QAbstractTableModel):
             mapping = [Place.meta, Place.feature, Place.class_var, None]
             return TableModel.ColorForRole.get(mapping[place], None)
         if role == Qt.FontRole:
-            if self.variables[row] != self.orig_variables[row]:
+            if self.orig_variables and \
+                    self.variables[row] != self.orig_variables[row]:
                 font = QFont()
                 font.setBold(True)
                 return font
@@ -200,16 +203,9 @@ class DomainEditor(QTableView):
     widget : parent widget
     """
 
-    variables = ContextSetting([])
-
-    def __init__(self, widget):
+    def __init__(self, variables=None):
         super().__init__()
-        widget.settingsHandler.initialize(self)
-        widget.contextAboutToBeOpened.connect(lambda args: self.set_domain(args[0]))
-        widget.contextOpened.connect(lambda: self.model().set_variables(self.variables))
-        widget.contextClosed.connect(lambda: self.model().set_variables([]))
-
-        self.setModel(VarTableModel(self.variables, self))
+        self.setModel(VarTableModel(self, variables))
 
         self.setSelectionMode(QTableView.NoSelection)
         self.horizontalHeader().setStretchLastSection(True)
@@ -388,8 +384,8 @@ class DomainEditor(QTableView):
         return col_data
 
     def set_domain(self, domain):
-        self.variables = self.parse_domain(domain)
-        self.model().set_orig_variables(self.variables)
+        variables = self.parse_domain(domain)
+        self.model().set_variables(variables)
 
     def reset_domain(self):
         self.model().reset_variables()
@@ -446,3 +442,24 @@ class DomainEditor(QTableView):
                 (domain.attributes, domain.class_vars, domain.metas))
             for var in vars
         ]
+
+
+class ContextualDomainEditor(DomainEditor):
+    """Component for editing variable times, in contexts.
+
+    Parameters
+    ----------
+    widget: parent widget
+    """
+    variables = ContextSetting([])
+
+    def __init__(self, widget):
+        super().__init__(self.variables)
+        widget.settingsHandler.initialize(self)
+        widget.contextAboutToBeOpened.connect(lambda args: self.set_domain(args[0]))
+        widget.contextOpened.connect(lambda: self.model().set_variables(self.variables))
+        widget.contextClosed.connect(lambda: self.model().set_variables([]))
+
+    def set_orig_domain(self, domain):
+        self.variables = self.parse_domain(domain)
+        self.model().set_orig_variables(self.variables)

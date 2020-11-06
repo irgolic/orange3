@@ -16,7 +16,7 @@ from Orange.data.io import FileFormat, UrlReader, class_from_qualified_name
 from Orange.widgets import widget, gui
 from Orange.widgets.settings import Setting, ContextSetting, \
     PerfectDomainContextHandler, SettingProvider
-from Orange.widgets.utils.domaineditor import DomainEditor
+from Orange.widgets.utils.domaineditor import ContextualDomainEditor
 from Orange.widgets.utils.itemmodels import PyListModel
 from Orange.widgets.utils.filedialogs import RecentPathsWComboMixin, \
     open_filename_dialog
@@ -118,7 +118,7 @@ class OWFile(widget.OWWidget, RecentPathsWComboMixin):
 
     variables = ContextSetting([])
 
-    domain_editor = SettingProvider(DomainEditor)
+    domain_editor = SettingProvider(ContextualDomainEditor)
 
     class Warning(widget.OWWidget.Warning):
         file_too_big = Msg("The file is too large to load automatically."
@@ -229,7 +229,7 @@ class OWFile(widget.OWWidget, RecentPathsWComboMixin):
         self.warnings = gui.widgetLabel(box, '')
 
         box = gui.widgetBox(self.controlArea, "Columns (Double click to edit)")
-        self.domain_editor = DomainEditor(self)
+        self.domain_editor = ContextualDomainEditor(self)
         self.editor_model = self.domain_editor.model()
         box.layout().addWidget(self.domain_editor)
 
