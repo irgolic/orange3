@@ -102,6 +102,7 @@ class VarTableModel(QAbstractTableModel):
         row, col = index.row(), index.column()
         row_data = self.variables[row]
         if role == Qt.EditRole:
+            end_index = index
             if col == Column.name and not (value.isspace() or value == ""):
                 row_data[col] = value
             elif col == Column.tpe:
@@ -110,12 +111,13 @@ class VarTableModel(QAbstractTableModel):
                 if not vartype.is_primitive() and \
                                 row_data[Column.place] < Place.meta:
                     row_data[Column.place] = Place.meta
+                    end_index = index.sibling(row, Column.place)
             elif col == Column.place:
                 row_data[col] = self.places.index(value)
             else:
                 return False
             # Settings may change background colors
-            self.dataChanged.emit(index.sibling(row, 0), index.sibling(row, 3))
+            self.dataChanged.emit(index, end_index)
             return True
         return False
 
@@ -205,6 +207,8 @@ class DomainEditor(QTableView):
 
     def __init__(self, variables=None):
         super().__init__()
+        self.variables = variables
+        self.ordered_variables = variables
         self.setModel(VarTableModel(self, variables))
 
         self.setSelectionMode(QTableView.NoSelection)
@@ -372,6 +376,16 @@ class DomainEditor(QTableView):
         else:
             return domain, [X, Y, m]
 
+    def original_index(self, index):
+        var = self.variables[index.row()]
+        return self.ordered_variables.index(var)
+
+    def type_for_index(self, index):
+        if index.column() != Column.tpe:
+            return None
+        var = self.variables[index.row()]
+        return var[Column.tpe]
+
     @staticmethod
     def _get_column(data, source_var, source_place):
         """ Extract column from data and preserve sparsity. """
@@ -383,9 +397,16 @@ class DomainEditor(QTableView):
             col_data = data[:, source_var].X
         return col_data
 
-    def set_domain(self, domain):
-        variables = self.parse_domain(domain)
-        self.model().set_variables(variables)
+    def set_domain(self, domain, variable_order=None):
+        self.variables = self.parse_domain(domain)
+        if variable_order:
+            self.ordered_variables = sorted(
+                self.variables,
+                key=lambda a: variable_order.index(a[0])
+            )
+        else:
+            self.ordered_variables = self.variables
+        self.model().set_variables(self.variables)
 
     def reset_domain(self):
         self.model().reset_variables()
@@ -459,7 +480,3 @@ class ContextualDomainEditor(DomainEditor):
         widget.contextAboutToBeOpened.connect(lambda args: self.set_domain(args[0]))
         widget.contextOpened.connect(lambda: self.model().set_variables(self.variables))
         widget.contextClosed.connect(lambda: self.model().set_variables([]))
-
-    def set_orig_domain(self, domain):
-        self.variables = self.parse_domain(domain)
-        self.model().set_orig_variables(self.variables)

@@ -53,6 +53,10 @@ from PyQt5.QtWidgets import (
     QApplication, QAbstractItemView, QToolTip, QStyleOption
 )
 
+from Orange.data import (
+    DiscreteVariable, ContinuousVariable, StringVariable, \
+    TimeVariable
+)
 from Orange.widgets.utils import encodings
 from Orange.widgets.utils.overlay import OverlayWidget
 
@@ -1447,6 +1451,18 @@ def icon_for_column_type(coltype):
     else:
         icon = QIcon()
     return icon
+
+
+def columntype_for_vartype(vartype):
+    # type: (Variable) -> ColumnType
+    if vartype == DiscreteVariable:
+        return ColumnType.Categorical
+    if vartype == ContinuousVariable:
+        return ColumnType.Numeric
+    if vartype == StringVariable:
+        return ColumnType.Text
+    if vartype == TimeVariable:
+        return ColumnType.Time
 
 
 class SkipItemDelegate(PreviewItemDelegate):

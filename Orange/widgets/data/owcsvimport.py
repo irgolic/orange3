@@ -70,6 +70,7 @@ from Orange.widgets.utils.settings import (
     QSettings_readArray, QSettings_writeArray
 )
 from Orange.widgets.utils.state_summary import format_summary_details
+from Orange.widgets.utils.textimport import columntype_for_vartype
 
 if typing.TYPE_CHECKING:
     # pylint: disable=invalid-name
@@ -220,6 +221,44 @@ class Options:
             else:
                 r.append((range(start, stop), enum_get(enumtype, name, None)))
         return r
+
+    def update_type(self, var_i, type):
+        ctypes = [ctype
+                  for r, ctype in self.columntypes
+                  for _ in r]
+        if len(ctypes) <= var_i:
+            ctypes += [ColumnType.Auto] * (var_i - len(ctypes) + 1)
+        ctypes[var_i] = type
+        self.__update_types(ctypes)
+
+    def __update_types(self, types):
+        """
+        Parameters
+        ----------
+
+        types (List[ColumnType]): list of types denoting not-skipped features
+        """
+        new_ctypes: [(range, ColumnType)] = []
+        i = 0
+        skip_c = 0
+        for r, prevtype in self.columntypes:
+            if prevtype == ColumnType.Skip:
+                new_ctypes.append([r, prevtype])
+                rlen = r.stop - r.start
+                skip_c += rlen
+                i += rlen
+                continue
+            for _ in r:
+                newtype = types[i - skip_c]
+                if new_ctypes and newtype == new_ctypes[-1][1]:
+                    oldr = new_ctypes[-1][0]
+                    new_ctypes[-1] = \
+                        (range(oldr.start, oldr.stop + 1),
+                         new_ctypes[-1][1])
+                else:
+                    new_ctypes.append((range(i, i + 1), newtype))
+                i += 1
+        self.columntypes = new_ctypes
 
 
 class CSVImportDialog(QDialog):
@@ -662,6 +701,7 @@ class OWCSVFileImport(widget.OWWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
+        self.data = None
         self.settingsAboutToBePacked.connect(self._saveState)
 
         self.__committimer = QTimer(self, singleShot=True)
@@ -1235,18 +1275,30 @@ class OWCSVFileImport(widget.OWWidget):
             self._inspect_discrete_variables(domain)
             filename = self.current_item().path()
             table.name = os.path.splitext(os.path.split(filename)[-1])[0]
+            self.domain_editor.set_domain(domain,
+                                          variable_order=list(df.columns))
+
         else:
             table = None
-            domain = None
+            self.domain_editor.set_domain(None)
 
         self.data = table
-        self.domain_editor.set_domain(domain)
 
         self.send("Data Frame", df)
         self.send('Data', table)
         self._update_status_messages(table)
 
-    def __handle_domain_edit(self):
+    def __handle_domain_edit(self, index):
+        self.Warning.clear()
+        # set type in import dialogue
+        vartype = self.domain_editor.type_for_index(index)
+        if vartype:
+            t = columntype_for_vartype(vartype)
+            var_i = self.domain_editor.original_index(index)
+            opts = self.current_item().options()
+            opts.update_type(var_i, t)
+
+        # commit data to output
         if self.data is None:
             table = None
         else:
