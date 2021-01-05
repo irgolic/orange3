@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import scipy.sparse as sp
 
-from AnyQt.QtCore import Qt, QAbstractTableModel
+from AnyQt.QtCore import Qt, QAbstractTableModel, QSize
 from AnyQt.QtGui import QColor, QFont
 from AnyQt.QtWidgets import QComboBox, QTableView, QSizePolicy
 
@@ -217,7 +217,7 @@ class DomainEditor(QTableView):
         self.setEditTriggers(
             QTableView.SelectedClicked | QTableView.DoubleClicked)
         self.setSizePolicy(
-            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            QSizePolicy.Expanding, QSizePolicy.Expanding)
         # setItemDelegate(ForColumn) apparently does not take ownership
         # of delegates, and coredumps if a a references is not stored somewhere.
         # We thus store delegates as attributes
@@ -227,6 +227,10 @@ class DomainEditor(QTableView):
         self.setItemDelegateForColumn(Column.tpe, self.vartype_delegate)
         self.place_delegate = PlaceDelegate(self, VarTableModel.places)
         self.setItemDelegateForColumn(Column.place, self.place_delegate)
+
+    @staticmethod
+    def sizeHint():
+        return QSize(600, 200)
 
     @staticmethod
     def _is_missing(x):
