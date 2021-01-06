@@ -518,6 +518,7 @@ class ImportItem(VarPathItem):
     """
     OptionsRole = Qt.UserRole + 14
     IsSessionItemRole = Qt.UserRole + 15
+    BrowseFilesRole = Qt.UserRole + 16
 
     def options(self) -> Optional[Options]:
         options = self.data(ImportItem.OptionsRole)
@@ -531,6 +532,12 @@ class ImportItem(VarPathItem):
 
     def isSessionItem(self) -> bool:
         return bool(self.data(ImportItem.IsSessionItemRole))
+
+    def setBrowseFilesItem(self, isbrowse: bool) -> None:
+        self.setData(isbrowse, ImportItem.BrowseFilesRole)
+
+    def isBrowseFilesItem(self) -> bool:
+        return bool(self.data(ImportItem.BrowseFilesRole))
 
     @classmethod
     def fromPath(cls, path: Union[str, PathItem]) -> 'ImportItem':
@@ -809,6 +816,11 @@ class OWCSVFileImport(widget.OWWidget):
         if item is not None:
             self._invalidate()
 
+        # Put the browse option in after state is restored
+        browse = ImportItem('Browse files...')
+        browse.setBrowseFilesItem(True)
+        self.import_items_model.appendRow(browse)
+
     def workflowEnvChanged(self, key, value, oldvalue):
         super().workflowEnvChanged(key, value, oldvalue)
         if key == "basedir":
@@ -824,6 +836,14 @@ class OWCSVFileImport(widget.OWWidget):
         if 0 <= index < model.rowCount():
             item = model.item(index)
             assert isinstance(item, ImportItem)
+            if item.isBrowseFilesItem():
+                # open file browse dialogue
+                fileChosen = self.browse()
+                if not fileChosen:
+                    # revert index change
+                    self.recent_combo.setCurrentIndex(0)
+                return
+            # else, open the selected file
             path = item.path()
             item.setData(True, ImportItem.IsSessionItemRole)
             move_item_to_index(model, item, 0)
@@ -985,6 +1005,8 @@ class OWCSVFileImport(widget.OWWidget):
 
             self.set_selected_file(path, options)
             self.current_item().setVarPath(varpath)
+            return True
+        return False
 
     def current_item(self):
         # type: () -> Optional[ImportItem]
