@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import scipy.sparse as sp
 
-from AnyQt.QtCore import Qt, QAbstractTableModel, QSize
+from AnyQt.QtCore import Qt, QAbstractTableModel, QSize, Signal
 from AnyQt.QtGui import QColor, QFont
 from AnyQt.QtWidgets import QComboBox, QTableView, QSizePolicy
 
@@ -35,6 +35,8 @@ class Place:
 
 
 class VarTableModel(QAbstractTableModel):
+    unsafeNumericCasted = Signal(bool, int)
+
     DISCRETE_VALUE_DISPLAY_LIMIT = 20
 
     places = "feature", "target", "meta", "skip"
@@ -108,10 +110,14 @@ class VarTableModel(QAbstractTableModel):
             elif col == Column.tpe:
                 vartype = self.name2type[value]
                 row_data[col] = vartype
-                if not vartype.is_primitive() and \
-                                row_data[Column.place] < Place.meta:
-                    row_data[Column.place] = Place.meta
-                    end_index = index.sibling(row, Column.place)
+                unsafe_cast = False
+                if not vartype.is_primitive():
+                    if row_data[Column.place] < Place.meta:
+                        row_data[Column.place] = Place.meta
+                        end_index = index.sibling(row, Column.place)
+                    if row_data[Column.not_valid]:
+                        unsafe_cast = True
+                self.unsafeNumericCasted.emit(unsafe_cast, index.row())
             elif col == Column.place:
                 row_data[col] = self.places.index(value)
             else:

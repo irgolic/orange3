@@ -681,6 +681,11 @@ class OWCSVFileImport(widget.OWWidget):
             "Categorical variables with >100 values may decrease performance.")
         renamed_vars = widget.Msg("Some variables have been renamed "
                                   "to avoid duplicates.\n{}")
+        numeric_cast = widget.Msg('Loading data as numeric and changing it to text'
+                                  'may result in altered values.\n'
+                                  'For example, 001 turns into 1.\n'
+                                  'Change the variable type to String in '
+                                  'the Import Options to avoid this.')
 
     #: Paths and options of files accessed in a 'session'
     _session_items = settings.Setting(
@@ -776,6 +781,14 @@ class OWCSVFileImport(widget.OWWidget):
         box.layout().addWidget(self.domain_editor)
 
         self.editor_model.dataChanged.connect(self.__handle_domain_edit)
+
+        self._unsafely_cast_indices = set()
+        @self.editor_model.unsafeNumericCasted.connect
+        def _(is_unsafe, index):
+            if is_unsafe:
+                self._unsafely_cast_indices.add(index)
+            elif index in self._unsafely_cast_indices:
+                self._unsafely_cast_indices.remove(index)
 
         #########
         # Buttons
@@ -1276,6 +1289,7 @@ class OWCSVFileImport(widget.OWWidget):
             self.domain_editor.set_domain(None)
 
         self.data = table
+        self._unsafely_cast_indices = set()
 
         self.send("Data Frame", df)
         self.send('Data', table)
@@ -1283,6 +1297,8 @@ class OWCSVFileImport(widget.OWWidget):
 
     def __handle_domain_edit(self, index):
         self.Warning.clear()
+        if self._unsafely_cast_indices:
+            self.Warning.numeric_cast()
         # set type in import dialogue
         vartype = self.domain_editor.type_for_index(index)
         if vartype:
