@@ -737,15 +737,18 @@ class OWCSVFileImport(widget.OWWidget):
         self.recent_combo.activated.connect(self.activate_recent)
         self.recent_combo.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        self.browse_button = QPushButton(
-            "…", icon=self.style().standardIcon(QStyle.SP_DirOpenIcon),
-            toolTip="Browse filesystem", autoDefault=False,
+        self.import_options_button = QPushButton(
+            "Import Options", enabled=False, autoDefault=False,
+            clicked=self._activate_import_dialog
         )
 
-        self.browse_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.browse_button.clicked.connect(self.browse)
+        def update_buttons(cbindex):
+            self.import_options_button.setEnabled(cbindex != -1)
+            self.load_button.setEnabled(cbindex != -1)
+
+        self.recent_combo.currentIndexChanged.connect(update_buttons)
         grid.addWidget(self.recent_combo, 0, 1, 1, 1)
-        grid.addWidget(self.browse_button, 0, 2, 1, 1)
+        grid.addWidget(self.import_options_button, 0, 2, 1, 1)
         self.controlArea.layout().addLayout(grid)
 
         ###########
@@ -792,19 +795,6 @@ class OWCSVFileImport(widget.OWWidget):
         b.setEnabled(False)
         b.setAutoDefault(False)
 
-        self.import_options_button = QPushButton(
-            "Import Options…", enabled=False, autoDefault=False,
-            clicked=self._activate_import_dialog
-        )
-
-        def update_buttons(cbindex):
-            self.import_options_button.setEnabled(cbindex != -1)
-            self.load_button.setEnabled(cbindex != -1)
-        self.recent_combo.currentIndexChanged.connect(update_buttons)
-
-        button_box.addButton(
-            self.import_options_button, QDialogButtonBox.ActionRole
-        )
         button_box.setStyleSheet(
             "button-layout: {:d};".format(QDialogButtonBox.MacLayout)
         )
