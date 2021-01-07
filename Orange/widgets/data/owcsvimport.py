@@ -746,6 +746,7 @@ class OWCSVFileImport(widget.OWWidget):
             "Import Options", enabled=False, autoDefault=False,
             clicked=self._activate_import_dialog
         )
+        self.import_options_specified = False
 
         def update_buttons(cbindex):
             self.import_options_button.setEnabled(cbindex != -1)
@@ -989,6 +990,7 @@ class OWCSVFileImport(widget.OWWidget):
                 path, selected_filter.mime_type,
             )
             options = None
+            self.import_options_specified = False
             # Search for path in history.
             # If found use the stored params to initialize the import dialog
             items = self.itemsFromSettings()
@@ -1049,6 +1051,7 @@ class OWCSVFileImport(widget.OWWidget):
             dlg.setOptions(options)
 
         def update():
+            self.import_options_specified = True
             newoptions = dlg.options()
             item.setData(newoptions, ImportItem.OptionsRole)
             # update local recent paths list
@@ -1272,6 +1275,8 @@ class OWCSVFileImport(widget.OWWidget):
         except Exception as e:  # pylint: disable=broad-except
             self.__set_error_state(e)
             df = None
+            if not self.import_options_specified:
+                QTimer.singleShot(0, self._activate_import_dialog)
         else:
             self.__clear_error_state()
 
