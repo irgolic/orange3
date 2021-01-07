@@ -147,32 +147,14 @@ class ComboDelegate(HorizontalGridDelegate):
         self.items = items
 
     def createEditor(self, parent, _option, index):
-        # This ugly hack closes the combo when the user selects an item
-        class Combo(QComboBox):
-            def __init__(self, *args):
-                super().__init__(*args)
-                self.popup_shown = False
-                self.highlighted_text = None
+        combo = QComboBox(parent)
 
-            def highlight(self, index):
-                self.highlighted_text = index
+        def choose_item(item):
+            self.view.model().setData(
+                index, item, Qt.EditRole)
+            self.view.closeEditor(combo, self.NoHint)
+        combo.activated[str].connect(choose_item)
 
-            def showPopup(self, *args):
-                super().showPopup(*args)
-                self.popup_shown = True
-
-            # Here, we need `self` from the closure
-            # pylint: disable=no-self-argument,attribute-defined-outside-init
-            def hidePopup(me):
-                if me.popup_shown:
-                    self.view.model().setData(
-                        index, me.highlighted_text, Qt.EditRole)
-                    self.popup_shown = False
-                super().hidePopup()
-                self.view.closeEditor(me, self.NoHint)
-
-        combo = Combo(parent)
-        combo.highlighted[str].connect(combo.highlight)
         return combo
 
 
