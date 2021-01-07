@@ -37,7 +37,7 @@ from typing import (
 )
 
 from PyQt5.QtCore import (
-    Qt, QSize, QPoint, QRect, QRectF, QRegExp, QAbstractTableModel,
+    Qt, QSize, QRect, QRectF, QRegExp, QAbstractTableModel,
     QModelIndex, QItemSelectionModel, QTextBoundaryFinder, QTimer, QEvent
 )
 from PyQt5.QtCore import pyqtSignal as Signal, pyqtSlot as Slot
@@ -1127,7 +1127,6 @@ class CSVImportWidget(QWidget):
             current = None
         cb = self.column_type_edit_cb
         g = QActionGroup(menu)
-        current_action = None
         # 'Copy' the column types model into a menu
         for i in range(cb.count()):
             if cb.itemData(i, Qt.AccessibleDescriptionRole) == "separator":
@@ -1139,7 +1138,6 @@ class CSVImportWidget(QWidget):
             ac.setCheckable(True)
             if ac.data() == current:
                 ac.setChecked(True)
-                current_action = ac
             g.addAction(ac)
 
         def update_types(action):
@@ -1478,6 +1476,7 @@ def columntype_for_vartype(vartype):
         return ColumnType.Text
     if vartype == TimeVariable:
         return ColumnType.Time
+    raise ValueError
 
 
 class SkipItemDelegate(PreviewItemDelegate):

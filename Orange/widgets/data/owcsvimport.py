@@ -40,8 +40,8 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import (
     QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, QGridLayout,
-    QVBoxLayout, QSizePolicy, QStyle, QFileIconProvider, QFileDialog,
-    QApplication, QMessageBox, QTextBrowser, QMenu
+    QVBoxLayout, QSizePolicy, QFileIconProvider, QFileDialog,
+    QApplication, QMessageBox, QTextBrowser
 )
 from PyQt5.QtCore import pyqtSlot as Slot, pyqtSignal as Signal
 
@@ -956,7 +956,7 @@ class OWCSVFileImport(widget.OWWidget):
         return mb
 
     @Slot()
-    def browse(self, prefixname=None, directory=None):
+    def browse(self):
         """
         Open a file dialog and select a user specified file.
         """
@@ -984,7 +984,7 @@ class OWCSVFileImport(widget.OWWidget):
             if not mtype.inherits("text/plain"):
                 mb = self._might_be_binary_mb(path)
                 if mb.exec() == QMessageBox.Cancel:
-                    return
+                    return False
             # initialize dialect based on selected format
             dialect, header = default_options_for_mime_type(
                 path, selected_filter.mime_type,
@@ -1470,7 +1470,7 @@ class HeaderSniffer(csv.Sniffer):
         super().__init__()
         self.dialect = dialect
 
-    def sniff(self, *_args, **_kwargs):  # pylint: disable=signature-differs
+    def sniff(self, *_args, **_kwargs):  # pylint: disable=signature-differs, arguments-differ
         # return fixed constant dialect, has_header sniffs dialect itself,
         # so it can't detect headers for a predefined dialect
         return self.dialect
@@ -1838,8 +1838,7 @@ class TaskState(QObject, PyOwned):
         """
         if self.cancel:
             raise TaskState.UserCancelException()
-        else:
-            self.__progressChanged.emit(current, total)
+        self.__progressChanged.emit(current, total)
 
 
 class TextReadWrapper(io.TextIOWrapper):
