@@ -69,15 +69,10 @@ class TestOWCSVFileImport(WidgetTest):
         self._stack.close()
         super().tearDown()
 
-    def test_basic(self):
-        w = self.widget
-        w.activate_recent(0)
-        w.cancel()
-
     data_regions_options = owcsvimport.Options(
         encoding="ascii", dialect=csv.excel_tab(),
         columntypes=[
-            (range(0, 1), ColumnType.Categorical),
+            (range(0, 1), ColumnType.Numeric),
             (range(1, 2), ColumnType.Text),
             (range(2, 3), ColumnType.Categorical),
         ], rowspec=[
@@ -88,13 +83,28 @@ class TestOWCSVFileImport(WidgetTest):
     data_regions_path = os.path.join(
         os.path.dirname(__file__), "data-regions.tab")
 
+    def test_load(self):
+        dirname = os.path.dirname(__file__)
+        path = os.path.join(dirname, "data-regions.tab")
+
+        w = self.create_widget(
+            owcsvimport.OWCSVFileImport,
+            stored_settings={
+                "_session_items": [
+                    (path, self.data_regions_options.as_dict())
+                ]
+            }
+        )
+        w.activate_recent(0)
+        w.cancel()
+
     def _check_data_regions(self, table):
         self.assertEqual(len(table), 3)
         self.assertEqual(len(table), 3)
-        self.assertTrue(table.domain["id"].is_discrete)
+        self.assertTrue(table.domain["id"].is_continuous)
         self.assertTrue(table.domain["continent"].is_discrete)
         self.assertTrue(table.domain["state"].is_string)
-        assert_array_equal(table.X, [[0, 1], [1, 1], [2, 0]])
+        assert_array_equal(table.X, [[1, 1], [2, 1], [3, 0]])
         assert_array_equal(table.metas,
                            np.array([["UK"], ["Russia"], ["Mexico"]], object))
 
@@ -273,33 +283,21 @@ class TestOWCSVFileImport(WidgetTest):
         cur = widget.current_item()
         self.assertIsNotNone(cur)
         self.assertTrue(samepath(cur.path(), path))
+        self.assertIsInstance(cur.varPath(), PathItem.AbsPath)
 
-    def test_browse_prefix(self):
+    def test_browse_relative(self):
         widget = self.widget
         path = self.data_regions_path
         with self._browse_setup(widget, path):
             basedir = os.path.dirname(__file__)
             widget.workflowEnv = lambda: {"basedir": basedir}
             widget.workflowEnvChanged("basedir", basedir, "")
-            widget.browse_relative(prefixname="basedir")
+            widget.browse()
 
         cur = widget.current_item()
         self.assertIsNotNone(cur)
         self.assertTrue(samepath(cur.path(), path))
         self.assertIsInstance(cur.varPath(), PathItem.VarPath)
-
-    def test_browse_prefix_parent(self):
-        widget = self.widget
-        path = self.data_regions_path
-
-        with self._browse_setup(widget, path):
-            basedir = os.path.join(os.path.dirname(__file__), "bs")
-            widget.workflowEnv = lambda: {"basedir": basedir}
-            widget.workflowEnvChanged("basedir", basedir, "")
-            mb = widget._path_must_be_relative_mb = mock.Mock()
-            widget.browse_relative(prefixname="basedir")
-            mb.assert_called()
-        self.assertIsNone(widget.current_item())
 
     def test_browse_for_missing(self):
         missing = os.path.dirname(__file__) + "/this file does not exist.csv"
