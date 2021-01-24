@@ -698,7 +698,6 @@ class OWPythonScript(OWWidget):
         self.consoleBox.setAlignment(Qt.AlignBottom)
         self.console.setTabStopWidth(4)
         self.splitCanvas.setSizes([2, 1])
-        self.setAcceptDrops(True)
         self.controlArea.layout().addStretch(10)
 
         self._restoreState()
@@ -902,12 +901,6 @@ class OWPythonScript(OWWidget):
             c = read_file_content(urls[0].toLocalFile(), limit=1000)
             if c is not None:
                 event.acceptProposedAction()
-
-    def dropEvent(self, event):
-        """Handle file drops"""
-        urls = event.mimeData().urls()
-        if urls:
-            self.text.pasteFile(urls[0])
 
     @classmethod
     def migrate_settings(cls, settings, version):
