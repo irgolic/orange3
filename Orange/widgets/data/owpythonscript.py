@@ -786,7 +786,7 @@ class OWPythonScript(OWWidget):
                                   shortcut=QKeySequence(Qt.ControlModifier | Qt.Key_R))
         self.addAction(self.run_action)
 
-        self.saveAction = action = QAction("&Save", self.text)
+        self.saveAction = action = QAction("&Save", self.editor)
         action.setToolTip("Save script to file")
         action.setShortcut(QKeySequence(QKeySequence.Save))
         action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
@@ -817,17 +817,17 @@ class OWPythonScript(OWWidget):
         select_row(self.libraryView, self.currentScriptIndex)
 
         if self.scriptText is not None:
-            current = self.text.toPlainText()
+            current = self.editor.toPlainText()
             # do not mark scripts as modified
             if self.scriptText != current:
-                self.text.document().setPlainText(self.scriptText)
+                self.editor.document().setPlainText(self.scriptText)
 
         if self.splitterState is not None:
             self.splitCanvas.restoreState(QByteArray(self.splitterState))
 
     def _saveState(self):
         self.scriptLibrary = [s.asdict() for s in self.libraryListSource]
-        self.scriptText = self.text.toPlainText()
+        self.scriptText = self.editor.toPlainText()
         self.splitterState = bytes(self.splitCanvas.saveState())
 
     def handle_input(self, obj, sig_id, signal):
@@ -873,7 +873,7 @@ class OWPythonScript(OWWidget):
         select_row(self.libraryView, index)
 
     def onAddScript(self, *_):
-        self.libraryList.append(Script("New script", self.text.toPlainText(), 0))
+        self.libraryList.append(Script("New script", self.editor.toPlainText(), 0))
         self.setSelectedScript(len(self.libraryList) - 1)
 
     def onAddScriptFromFile(self, *_):
@@ -908,7 +908,7 @@ class OWPythonScript(OWWidget):
                 self.addNewScriptAction.trigger()
                 return
 
-            self.text.setDocument(self.documentForScript(current))
+            self.editor.setDocument(self.documentForScript(current))
             self.currentScriptIndex = current
 
     def documentForScript(self, script=0):
@@ -929,8 +929,8 @@ class OWPythonScript(OWWidget):
     def commitChangesToLibrary(self, *_):
         index = self.selectedScriptIndex()
         if index is not None:
-            self.libraryList[index].script = self.text.toPlainText()
-            self.text.document().setModified(False)
+            self.libraryList[index].script = self.editor.toPlainText()
+            self.editor.document().setModified(False)
             self.libraryList.emitDataChanged(index)
 
     def onModificationChanged(self, modified):
@@ -942,8 +942,8 @@ class OWPythonScript(OWWidget):
     def restoreSaved(self):
         index = self.selectedScriptIndex()
         if index is not None:
-            self.text.document().setPlainText(self.libraryList[index].script)
-            self.text.document().setModified(False)
+            self.editor.document().setPlainText(self.libraryList[index].script)
+            self.editor.document().setModified(False)
 
     def saveScript(self):
         index = self.selectedScriptIndex()
@@ -968,7 +968,7 @@ class OWPythonScript(OWWidget):
                 fn = filename
 
             f = open(fn, 'w')
-            f.write(self.text.toPlainText())
+            f.write(self.editor.toPlainText())
             f.close()
 
     def initial_locals_state(self):
