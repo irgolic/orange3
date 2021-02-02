@@ -795,6 +795,7 @@ class OWCSVFileImport(widget.OWWidget):
         self.summary_text.setFrameStyle(QTextBrowser.NoFrame)
         self.summary_text.setMinimumHeight(self.fontMetrics().ascent() * 2 + 4)
         self.summary_text.viewport().setAutoFillBackground(False)
+        self.summary_text.setFixedHeight(75)
         box.layout().addWidget(self.summary_text)
 
         self.info.set_output_summary(self.info.NoOutput)
