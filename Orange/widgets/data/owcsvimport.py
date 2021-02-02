@@ -39,10 +39,10 @@ from PyQt5.QtGui import (
     QStandardItem, QStandardItemModel, QPalette, QColor, QIcon
 )
 from PyQt5.QtWidgets import (
-    QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, QGridLayout,
+    QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox,
     QVBoxLayout, QSizePolicy, QFileIconProvider, QFileDialog,
-    QApplication, QMessageBox, QTextBrowser
-)
+    QApplication, QMessageBox, QTextBrowser,
+    QStyle, QMenu, QHBoxLayout)
 from PyQt5.QtCore import pyqtSlot as Slot, pyqtSignal as Signal
 
 import numpy as np
@@ -518,7 +518,6 @@ class ImportItem(VarPathItem):
     """
     OptionsRole = Qt.UserRole + 14
     IsSessionItemRole = Qt.UserRole + 15
-    BrowseFilesRole = Qt.UserRole + 16
 
     def options(self) -> Optional[Options]:
         options = self.data(ImportItem.OptionsRole)
@@ -532,12 +531,6 @@ class ImportItem(VarPathItem):
 
     def isSessionItem(self) -> bool:
         return bool(self.data(ImportItem.IsSessionItemRole))
-
-    def setBrowseFilesItem(self, isbrowse: bool) -> None:
-        self.setData(isbrowse, ImportItem.BrowseFilesRole)
-
-    def isBrowseFilesItem(self) -> bool:
-        return bool(self.data(ImportItem.BrowseFilesRole))
 
     @classmethod
     def fromPath(cls, path: Union[str, PathItem]) -> 'ImportItem':
@@ -724,38 +717,71 @@ class OWCSVFileImport(widget.OWWidget):
 
         self.controlArea.layout().setSpacing(-1)  # reset spacing
 
-        grid = QGridLayout()
 
         #############
         # File select
         #############
-        grid.addWidget(QLabel("File:", self), 0, 0, 1, 1)
+        box = QHBoxLayout()
+        box.addWidget(QLabel("File:", self))
 
         self.import_items_model = VarPathItemModel(self)
         self.import_items_model.setReplacementEnv(self._replacements())
         self.recent_combo = ItemStyledComboBox(
-            self, objectName="recent-combo", toolTip="Recent files.",
+            self, objectName="recent-combo",
             sizeAdjustPolicy=QComboBox.AdjustToMinimumContentsLengthWithIcon,
-            minimumContentsLength=16, placeholderText="Recent files…"
+            minimumContentsLength=16
         )
         self.recent_combo.setModel(self.import_items_model)
         self.recent_combo.activated.connect(self.activate_recent)
         self.recent_combo.setSizePolicy(
             QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+
+        self.browse_button = QPushButton(
+            "…", icon=self.style().standardIcon(QStyle.SP_DirOpenIcon),
+            toolTip="Browse filesystem", autoDefault=False,
+        )
+        # A button drop down menu with selection of explicit workflow dir
+        # relative import. This is only enabled when 'basedir' workflow env
+        # is set. XXX: Always use menu, disable Import relative... action?
+        self.browse_menu = menu = QMenu(self.browse_button)
+        ac = menu.addAction("Import any file…")
+        ac.triggered.connect(self.browse)
+
+        ac = menu.addAction("Import relative to workflow file…")
+        ac.setToolTip("Import a file within the workflow file directory")
+        ac.triggered.connect(lambda: self.browse_relative("basedir"))
+        if "basedir" in self._replacements():
+            self.browse_button.setMenu(menu)
+
+        self.browse_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.browse_button.clicked.connect(self.browse)
+
+        #########
+        # Buttons
+        #########
+
         self.import_options_button = QPushButton(
             "Import Options", enabled=False, autoDefault=False,
             clicked=self._activate_import_dialog
         )
         self.import_options_specified = False
 
+        self.load_button = QPushButton(
+            "Load", enabled=False, default=True,
+            clicked=self.__committimer.start
+        )
+
         def update_buttons(cbindex):
             self.import_options_button.setEnabled(cbindex != -1)
             self.load_button.setEnabled(cbindex != -1)
 
         self.recent_combo.currentIndexChanged.connect(update_buttons)
-        grid.addWidget(self.recent_combo, 0, 1, 1, 1)
-        grid.addWidget(self.import_options_button, 0, 2, 1, 1)
-        self.controlArea.layout().addLayout(grid)
+        box.addWidget(self.recent_combo)
+        box.addWidget(self.browse_button)
+        gui.rubber(box)
+        box.addWidget(self.import_options_button)
+        box.addWidget(self.load_button)
+        self.controlArea.layout().addLayout(box)
 
         ###########
         # Info text
@@ -791,39 +817,12 @@ class OWCSVFileImport(widget.OWWidget):
             elif index in self._unsafely_cast_indices:
                 self._unsafely_cast_indices.remove(index)
 
-        #########
-        # Buttons
-        #########
-        button_box = QDialogButtonBox(
-            orientation=Qt.Horizontal,
-            standardButtons=QDialogButtonBox.Cancel | QDialogButtonBox.Retry
-        )
-        self.load_button = b = button_box.button(QDialogButtonBox.Retry)
-        b.setText("Load")
-        b.clicked.connect(self.__committimer.start)
-        b.setEnabled(False)
-        b.setDefault(True)
-
-        self.cancel_button = b = button_box.button(QDialogButtonBox.Cancel)
-        b.clicked.connect(self.cancel)
-        b.setEnabled(False)
-        b.setAutoDefault(False)
-
-        button_box.setStyleSheet(
-            "button-layout: {:d};".format(QDialogButtonBox.MacLayout)
-        )
-        self.controlArea.layout().addWidget(button_box)
         self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Maximum)
 
         self._restoreState()
         item = self.current_item()
         if item is not None:
             self._invalidate()
-
-        # Put the browse option in after state is restored
-        browse = ImportItem('Browse files...')
-        browse.setBrowseFilesItem(True)
-        self.import_items_model.appendRow(browse)
 
     def workflowEnvChanged(self, key, value, oldvalue):
         super().workflowEnvChanged(key, value, oldvalue)
@@ -840,14 +839,6 @@ class OWCSVFileImport(widget.OWWidget):
         if 0 <= index < model.rowCount():
             item = model.item(index)
             assert isinstance(item, ImportItem)
-            if item.isBrowseFilesItem():
-                # open file browse dialogue
-                fileChosen = self.browse()
-                if not fileChosen:
-                    # revert index change
-                    self.recent_combo.setCurrentIndex(0)
-                return
-            # else, open the selected file
             path = item.path()
             item.setData(True, ImportItem.IsSessionItemRole)
             move_item_to_index(model, item, 0)
@@ -1206,7 +1197,6 @@ class OWCSVFileImport(widget.OWWidget):
         self.progressBarInit()
         self.setBlocking(True)
         self.setStatusMessage("Running")
-        self.cancel_button.setEnabled(True)
         self.load_button.setText("Restart")
         path = self.current_item().path()
         self.Error.clear()
@@ -1218,7 +1208,6 @@ class OWCSVFileImport(widget.OWWidget):
         self.progressBarFinished()
         self.setStatusMessage("")
         self.setBlocking(False)
-        self.cancel_button.setEnabled(False)
         self.load_button.setText("Reload")
 
     def __set_error_state(self, err):
